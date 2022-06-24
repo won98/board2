@@ -26,6 +26,9 @@ module.exports = {
         where: { idx: idx },
       });
       if (rows) return res.status(200).json({ result: rows });
+      else {
+        res.send(0);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -56,6 +59,9 @@ module.exports = {
         },
       });
       if (rows) return res.status(200).json({ result: rows });
+      else {
+        res.send(0);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -80,7 +86,10 @@ module.exports = {
           },
         }
       );
-      if (rows) return res.status(200).json({ result: rows });
+      if (rows) return res.status(200);
+      else {
+        res.send(0);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -97,6 +106,9 @@ module.exports = {
         }
       );
       if (rows) return res.status(200).json({ result: rows });
+      else {
+        res.send(0);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -113,6 +125,9 @@ module.exports = {
         }
       );
       if (rows) return res.status(200).json({ result: rows });
+      else {
+        res.send(0);
+      }
     } catch (err) {
       console.log(err);
     }
