@@ -1,6 +1,10 @@
 const { Users } = require("../models");
 const { createToken, creatRefreshToken } = require("../utils/jwt");
+const { checkToken } = require("../middleware/isAuth");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const secretKey = "" + process.env.ACCESS_KEY;
 
 module.exports = {
   Signup: async (req, res) => {
@@ -46,16 +50,23 @@ module.exports = {
       });
       const compare = await bcrypt.compare(passwd, user.passwd);
       if (compare == true) {
-        const token = createToken(Users.id);
-        const retoken = creatRefreshToken(Users.id);
-        return res.send([token, retoken]);
+        //const token = createToken(Users.id);
+        const token = createToken(user);
+        const retoken = creatRefreshToken(user);
+        //const decodedToken = checkToken(id);
+        return res.send({ token, retoken });
       } else {
         throw res.send(err);
       }
     } catch (err) {
       console.log(err);
     }
+
+    // controller.get("/test", checkToken, (req, res) => {
+    //   res.json(req.decoded);
+    // });
   },
+
   List: async (req, res) => {
     try {
       const rows = await Users.findAll();
@@ -95,6 +106,21 @@ module.exports = {
       } else {
         res.send(200);
       }
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  TokenCh: async (req, res) => {
+    try {
+      let auth = req.get("x_auth");
+      console.log(auth);
+      const token = authorization(" ", " ")[1];
+      jwt.verify(token, secretKey, (err, encode) => {
+        if (err) console.error(err);
+        else {
+          console.log(encode);
+        }
+      });
     } catch (err) {
       console.log(err);
     }

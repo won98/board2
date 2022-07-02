@@ -1,5 +1,6 @@
 const { Board } = require("../models");
 const { Op } = require("sequelize");
+//const { Check } = require("../middleware/isAuth");
 
 module.exports = {
   Post: async (req, res) => {
@@ -20,14 +21,22 @@ module.exports = {
   },
   Delete: async (req, res) => {
     try {
-      let { idx } = req.body;
-      //console.log(idx);
-      const rows = await Board.destroy({
-        where: { idx: idx },
-      });
-      if (rows) return res.status(200).json({ result: rows });
-      else {
-        res.send(0);
+      //const token = req.headers.authorization.split("Bearer ");
+      const token = req.headers.authorization;
+      console.log(token);
+      const match = await token;
+      if (match) {
+        let { idx } = req.body;
+        //console.log(idx);
+        const rows = await Board.destroy({
+          where: { idx: idx },
+        });
+        if (rows) return res.status(200).json({ result: rows });
+        else {
+          res.send(0);
+        }
+      } else {
+        throw res.send("err");
       }
     } catch (err) {
       console.log(err);
@@ -86,7 +95,7 @@ module.exports = {
           },
         }
       );
-      if (rows) return res.status(200);
+      if (rows) return res.status(200).json({ result: rows });
       else {
         res.send(0);
       }

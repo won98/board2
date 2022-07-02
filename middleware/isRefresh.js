@@ -6,7 +6,7 @@ const { User } = require("../models");
 
 const createToken = (payload) => {
   console.log(createToken);
-  const token = jwt.sign({ name: payload.toString() }, secretKey, {
+  const token = jwt.sign({ id: payload.toString() }, secretKey, {
     algorithm: "HS256",
     expiresIn: "30m",
   });
