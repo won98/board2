@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
+      refreshtoken: {
+        type: DataTypes.STRING(200),
+        allowNull: true,
+      },
     },
     {
       freezeTableName: true,

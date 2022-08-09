@@ -12,6 +12,6 @@ router.post("/login", controller.Login);
 router.post("/emailcheck", controller.Checkemail);
 router.post("/idcheck", controller.Checkid);
 router.get("/list", controller.List);
-router.get("/check", Check);
+router.post("/token", controller.IssueToken);
 //router.get("/profile", checkToken);
 module.exports = router;

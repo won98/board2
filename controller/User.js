@@ -1,43 +1,35 @@
 const { Users } = require("../models");
-const { createToken, creatRefreshToken } = require("../utils/jwt");
-const { checkToken } = require("../middleware/isAuth");
+const jwt = require("../utils/jwt");
+const { createRefreshToken } = require("../utils/jwt");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const shortid = require("shortid");
 require("dotenv").config();
 const secretKey = "" + process.env.ACCESS_KEY;
 
 module.exports = {
   Signup: async (req, res) => {
     try {
-      const data = await Users.findOne({ where: { email: req.body.email } });
-      if (data) {
-        // 반환 데이터가 있다면 이미 존재하는 이메일
-        res.status(400).json({
-          result: false,
-          message: "이미 존재하는 이메일입니다.",
-        });
-        if (rows) return res.status(200).json({ result: rows });
-      }
-      const iddata = await Users.findOne({ where: { id: req.body.id } });
-      if (iddata) {
-        // 반환 데이터가 있다면 이미 존재하는 이메일
-        res.status(400).json({
-          result: false,
-          message: "이미 존재하는 아이디입니다.",
-        });
-        if (rows) return res.status(200).json({ result: rows });
-      } else {
-        res.send(200);
-      }
       let { name, email, id, passwd } = req.body;
       const hash = await bcrypt.hash(passwd, 10);
+      const beforeId = shortid.generate();
+      let token = jwt.createToken({
+        user_id: id,
+        id: beforeId,
+      });
+      let rtoken = jwt.createRefreshToken({
+        id: beforeId,
+      });
       const rows = await Users.create({
         name: name,
         email: email,
         id: id,
         passwd: hash,
+        refreshtoken: rtoken,
       });
-      if (rows) return res.status(200).json({ result: rows });
+      if (rows)
+        return res
+          .status(200)
+          .json({ result: rows, xauth: token, rxauth: rtoken });
     } catch (err) {
       console.log(err);
     }
@@ -45,26 +37,72 @@ module.exports = {
   Login: async (req, res) => {
     try {
       const { id, passwd } = req.body;
-      const user = await Users.findOne({
+      let token;
+      let rtoken;
+      const rows = await Users.findOne({
         where: { id: id },
       });
-      const compare = await bcrypt.compare(passwd, user.passwd);
+      const compare = await bcrypt.compare(passwd, rows.passwd);
+
       if (compare == true) {
         //const token = createToken(Users.id);
-        const token = createToken(user);
-        const retoken = creatRefreshToken(user);
-        //const decodedToken = checkToken(id);
-        return res.send({ token, retoken });
+        token = jwt.createToken({
+          user_id: rows.id,
+          id: rows.id,
+        });
+        rtoken = createRefreshToken({ id: rows.id });
+        await Users.update(
+          {
+            refreshtoken: rtoken,
+          },
+          {
+            where: {
+              id: rows.id,
+            },
+          }
+        );
+        return res.status(200).json({ token: token, rtoken: rtoken });
       } else {
         throw res.send(err);
       }
     } catch (err) {
       console.log(err);
     }
-
-    // controller.get("/test", checkToken, (req, res) => {
-    //   res.json(req.decoded);
-    // });
+  },
+  IssueToken: async (req, res) => {
+    try {
+      let { rxauth } = req.headers;
+      const issueId = jwt.verifyRefreshToken(rxauth);
+      const isTrue = await Users.findOne({
+        where: {
+          id: issueId.user_id,
+          refreshtoken: rxauth,
+        },
+      });
+      console.log(issueId);
+      // console.log(isTrue);
+      //console.log("rxauth=", rxauth);
+      // if (!isTrue) {
+      //   res.status(200).json({ result: "failed" });
+      // } else {
+      //   let token = jwt.createToken({
+      //     id: isTrue.id,
+      //   });
+      //   return res.status(200).json({
+      //     xauth: token,
+      //   });
+      // }
+      if (isTrue) {
+        let token = jwt.createToken({
+          id: isTrue.id,
+        });
+        return res.status(200).json({ xauth: token });
+      } else {
+        res.status(200).json({ result: "failed" });
+      }
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   List: async (req, res) => {

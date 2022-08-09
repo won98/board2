@@ -1,18 +1,22 @@
 const { Board } = require("../models");
 const { Op } = require("sequelize");
-//const { Check } = require("../middleware/isAuth");
-
+const { Users } = require("../models");
+const jwt = require("../utils/jwt");
+const { sequelize, QueryTypes } = require("../models");
 module.exports = {
   Post: async (req, res) => {
     try {
-      let { content } = req.body;
-      let image = "/img/" + req.files.image[0].fileName;
       let { title } = req.body;
       console.log(req.files);
+      let { content } = req.body;
+      let { xauth } = req.body;
+      let decoded = jwt.verifyToken(xauth);
+      let image = "/img/" + req.files.image[0].fileName;
       const rows = await Board.create({
         title: title,
         content: content,
         image: image,
+        id: decoded.id,
       });
       if (rows) return res.status(200).json({ result: rows });
     } catch (err) {
@@ -21,22 +25,16 @@ module.exports = {
   },
   Delete: async (req, res) => {
     try {
-      //const token = req.headers.authorization.split("Bearer ");
-      const token = req.headers.authorization;
-      console.log(token);
-      const match = await token;
-      if (match) {
-        let { idx } = req.body;
-        //console.log(idx);
-        const rows = await Board.destroy({
-          where: { idx: idx },
-        });
-        if (rows) return res.status(200).json({ result: rows });
-        else {
-          res.send(0);
-        }
-      } else {
-        throw res.send("err");
+      let { xauth } = req.body;
+      let decoded = jwt.verifyToken(xauth);
+
+      //console.log(idx);
+      const rows = await Board.destroy({
+        where: { id: decoded.id },
+      });
+      if (rows) return res.status(200).json({ result: rows });
+      else {
+        res.send(0);
       }
     } catch (err) {
       console.log(err);
@@ -77,21 +75,17 @@ module.exports = {
   },
   Update: async (req, res) => {
     try {
-      let { title, n_title } = req.body;
-      let { content, n_content } = req.body;
-      // let image = "/img/" + req.files.image[0].filename;
-      // let n_image = "/img/" + req.files.image[0].filename;
+      let { xauth } = req.body;
+      let decoded = jwt.verifyToken(xauth);
+      let { n_title, n_content } = req.body;
       const rows = await Board.update(
         {
           title: n_title,
           content: n_content,
-          //image: n_image,
         },
         {
           where: {
-            title: title,
-            content: content,
-            //image: image,
+            id: decoded.id,
           },
         }
       );
@@ -105,12 +99,14 @@ module.exports = {
   },
   Updatcontent: async (req, res) => {
     try {
-      let { content, n_content } = req.body;
+      let { n_content } = req.body;
+      let { xauth } = req.body;
+      let decoded = jwt.verifyToken(xauth);
       const rows = await Board.update(
         { content: n_content },
         {
           where: {
-            content: content,
+            id: decoded.id,
           },
         }
       );
@@ -124,12 +120,14 @@ module.exports = {
   },
   Updatetitle: async (req, res) => {
     try {
-      let { title, n_title } = req.body;
+      let { n_title } = req.body;
+      let { xauth } = req.body;
+      let decoded = jwt.verifyToken(xauth);
       const rows = await Board.update(
         { title: n_title },
         {
           where: {
-            title: title,
+            id: decoded.id,
           },
         }
       );
@@ -141,51 +139,4 @@ module.exports = {
       console.log(err);
     }
   },
-  // Updatimage: async (req, res) => {
-  //   try {
-  //     const obj = JSON.parse(JSON.stringify(req.files));
-  //     console.log(JSON.parse(JSON.stringify(req.files)));
-  //     var image;
-  //     //let image = "/img/" + req.files.image[0].filename;
-  //     //let n_image = "/img/" + req.files.image[0].filename;
-  //     if (obj.image) {
-  //       console.log("1");
-  //       image = "/img/" + req.files.image[0].filename;
-  //     } else {
-  //       console.log("0");
-  //       // image = req.body.image;
-  //     }
-  //     //let { image, n_image } = "/img/" + req.files.image[0].filename;
-  //     //console.log(image);
-  //     //let n_image = "/img/" + req.files.image[0].filename;
-  //     const rows = await Board.update(
-  //       { image: image },
-  //       {
-  //         where: {
-  //           image: n_image,
-  //         },
-  //       }
-  //     );
-  //     if (rows) return res.status(200).json({ result: rows });
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // },
-  // Deleteimage: async (req, res) => {
-  //   try {
-  //     let image = JSON.parse(
-  //       JSON.stringify("/img/" + req.files.image[0].filename)
-  //     );
-  //     //console.log(idx);
-  //     const rows = await Board.destroy(
-  //       { image: image },
-  //       {
-  //         where: { image: image },
-  //       }
-  //     );
-  //     if (rows) return res.status(200).json({ result: rows });
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // },
 };
