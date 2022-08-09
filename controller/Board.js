@@ -10,13 +10,13 @@ module.exports = {
       console.log(req.files);
       let { content } = req.body;
       let { xauth } = req.body;
-      let checktk = jwt.verifyToken(xauth);
+      let decoded = jwt.verifyToken(xauth);
       let image = "/img/" + req.files.image[0].fileName;
       const rows = await Board.create({
         title: title,
         content: content,
         image: image,
-        id: checktk.id,
+        id: decoded.id,
       });
       if (rows) return res.status(200).json({ result: rows });
     } catch (err) {
@@ -26,11 +26,11 @@ module.exports = {
   Delete: async (req, res) => {
     try {
       let { xauth } = req.body;
-      let checktk = jwt.verifyToken(xauth);
+      let decoded = jwt.verifyToken(xauth);
 
       //console.log(idx);
       const rows = await Board.destroy({
-        where: { id: checktk.id },
+        where: { id: decoded.id },
       });
       if (rows) return res.status(200).json({ result: rows });
       else {
@@ -76,7 +76,7 @@ module.exports = {
   Update: async (req, res) => {
     try {
       let { xauth } = req.body;
-      let checktk = jwt.verifyToken(xauth);
+      let decoded = jwt.verifyToken(xauth);
       let { n_title, n_content } = req.body;
       const rows = await Board.update(
         {
@@ -85,7 +85,7 @@ module.exports = {
         },
         {
           where: {
-            id: checktk.id,
+            id: decoded.id,
           },
         }
       );
@@ -101,12 +101,12 @@ module.exports = {
     try {
       let { n_content } = req.body;
       let { xauth } = req.body;
-      let checktk = jwt.verifyToken(xauth);
+      let decoded = jwt.verifyToken(xauth);
       const rows = await Board.update(
         { content: n_content },
         {
           where: {
-            id: checktk.id,
+            id: decoded.id,
           },
         }
       );
@@ -122,12 +122,12 @@ module.exports = {
     try {
       let { n_title } = req.body;
       let { xauth } = req.body;
-      let checktk = jwt.verifyToken(xauth);
+      let decoded = jwt.verifyToken(xauth);
       const rows = await Board.update(
         { title: n_title },
         {
           where: {
-            id: checktk.id,
+            id: decoded.id,
           },
         }
       );
