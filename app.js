@@ -27,6 +27,7 @@ app.use("/img", express.static("./uploads"));
 
 app.use("/board", Router.BoardRoute);
 app.use("/user", Router.UserRoute);
+app.use("/follow", Router.FollowRoute);
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

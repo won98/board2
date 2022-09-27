@@ -8,15 +8,15 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
       },
       name: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(10),
         allowNull: false,
       },
       email: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(180),
         allowNull: false,
       },
       id: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(11),
         allowNull: false,
       },
       passwd: {

@@ -2,6 +2,9 @@
 
 # dependencies
 /node_modules
+/data2.csv
+/loadtest.json
+/myReport
 /.pnp
 .pnp.js
 

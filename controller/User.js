@@ -1,4 +1,4 @@
-const { Users } = require("../models");
+const { Users, sequelize, Userinfo } = require("../models");
 const jwt = require("../utils/jwt");
 const { createRefreshToken } = require("../utils/jwt");
 const bcrypt = require("bcrypt");
@@ -19,17 +19,45 @@ module.exports = {
       let rtoken = jwt.createRefreshToken({
         id: beforeId,
       });
-      const rows = await Users.create({
-        name: name,
-        email: email,
-        id: id,
-        passwd: hash,
-        refreshtoken: rtoken,
+      const tx = await sequelize.transaction();
+      const rows = await Users.create(
+        {
+          name: name,
+          email: email,
+          id: id,
+          passwd: hash,
+          refreshtoken: rtoken,
+        },
+        {
+          transaction: tx,
+        }
+      );
+
+      const info_create = await Userinfo.create(
+        {
+          id: id,
+          follower_count: 0,
+          following_count: 0,
+        }
+        // {
+        //   transaction: tx,
+        // }
+      );
+      console.log(beforeId);
+
+      if (!info_create) {
+        await tx.rollback();
+        throw {
+          code: 7,
+        };
+      }
+      await tx.commit();
+      return res.status(200).json({
+        result: "success",
+        resuelt: rows,
+        xauth: token,
+        rxauth: rtoken,
       });
-      if (rows)
-        return res
-          .status(200)
-          .json({ result: rows, xauth: token, rxauth: rtoken });
     } catch (err) {
       console.log(err);
     }
@@ -62,9 +90,7 @@ module.exports = {
           }
         );
         return res.status(200).json({ token: token, rtoken: rtoken });
-      } else {
-        throw res.send(err);
-      }
+      } else throw { code: 9 };
     } catch (err) {
       console.log(err);
     }
